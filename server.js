@@ -10,7 +10,7 @@ app.use(bodyParser.json()); // Middleware to parse JSON request bodies
 
 // Initialize Groq client
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 // Add a health-check route to test your deployment
@@ -20,36 +20,38 @@ app.get('/', (req, res) => {
 
 // POST route for /chat
 app.post('/chat', async (req, res) => {
-  const { totalEnergyConsumption, productNames, powerRatings } = req.body;
+  const { totalEnergyConsumption, productNames, powerRatings, hours } = req.body;
 
   if (
     totalEnergyConsumption === undefined ||
     !productNames ||
-    !powerRatings
+    !powerRatings ||
+    !hours
   ) {
-    return res.status(400).json({ error: "Incomplete energy data provided" });
+    return res.status(400).json({ error: 'Incomplete energy data provided' });
   }
 
   try {
     const chatCompletion = await groq.chat.completions.create({
-      model: "deepseek-r1-distill-qwen-32b",
+      model: 'deepseek-r1-distill-qwen-32b',
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: `Based on the energy consumption data for the past month, I have the following details:
 
           - Total energy consumption: ${totalEnergyConsumption} kWh
-          - Products: ${productNames.join(", ")} (e.g., LED bulbs, AC units, etc.)
-          - Power ratings (in watts): ${powerRatings.join(", ")} (e.g., 10W, 50W, etc.)
+          - Products: ${productNames.join(', ')} (e.g., LED bulbs, AC units, etc.)
+          - Power ratings (in watts): ${powerRatings.join(', ')} (e.g., 10W, 50W, etc.)
+          - Usage hours: ${hours.join(', ')} (e.g., 5 hours/day, 8 hours/day, etc.)
 
-          I have already switched to energy-efficient devices like LED lightbulbs. However, I am looking for further ways to optimize energy use and reduce unnecessary consumption. Could you provide a detailed recommendation on how to further optimize my energy consumption? Include practical tips for each device type, potential cost savings, and any overlooked opportunities for further improvement.`
-        }
+          I have already switched to energy-efficient devices like LED lightbulbs. However, I am looking for further ways to optimize energy use and reduce unnecessary consumption. Could you provide a detailed recommendation on how to further optimize my energy consumption? Include practical tips for each device type, potential cost savings, and any overlooked opportunities for further improvement.`,
+        },
       ],
       temperature: 0.7,
       max_tokens: 1024,
       top_p: 1,
       stream: true,
-      stop: null
+      stop: null,
     });
 
     res.setHeader('Content-Type', 'application/json');
@@ -62,10 +64,11 @@ app.post('/chat', async (req, res) => {
 
     res.write('"}');
     res.end();
-
   } catch (error) {
-    console.error("Error occurred:", error);
-    res.status(500).json({ error: "Failed to get a response from the model", details: error.message });
+    console.error('Error occurred:', error);
+    res
+      .status(500)
+      .json({ error: 'Failed to get a response from the model', details: error.message });
   }
 });
 
