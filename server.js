@@ -32,7 +32,7 @@ app.post('/chat', async (req, res) => {
 
   try {
     const chatCompletion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+      model: "deepseek-r1-distill-qwen-32b",
       messages: [
         {
           role: "user",
