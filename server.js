@@ -21,19 +21,25 @@ app.post('/chat', async (req, res) => {
   try {
     // Make the request to Groq's chat completion endpoint
     const chatCompletion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
-      messages: [
-        {
-          role: "user",
-          content: `Based on the energy consumption data for the past month: ${energyData}, provide a detailed recommendation on how to optimize energy use and reduce unnecessary consumption. Include practical tips and potential cost savings.`
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 1024,
-      top_p: 1,
-      stream: true,
-      stop: null
-    });
+  model: "llama3-8b-8192",
+  messages: [
+    {
+      role: "user",
+      content: `Based on the energy consumption data for the past month, I have the following details:
+
+      - Total energy consumption: ${totalEnergyConsumption} kWh
+      - Products: ${productNames.join(", ")} (e.g., LED bulbs, AC units, etc.)
+      - Power ratings (in watts): ${powerRatings.join(", ")} (e.g., 10W, 50W, etc.)
+
+      I have already switched to energy-efficient devices like LED lightbulbs. However, I am looking for further ways to optimize energy use and reduce unnecessary consumption. Could you provide a detailed recommendation on how to further optimize my energy consumption? Include practical tips for each device type, potential cost savings, and any overlooked opportunities for further improvement.`
+    }
+  ],
+  temperature: 0.7,
+  max_tokens: 1024,
+  top_p: 1,
+  stream: true,
+  stop: null
+});
 
     res.setHeader('Content-Type', 'application/json');
     res.write('{"response": "'); // Start JSON response
