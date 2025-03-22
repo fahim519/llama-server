@@ -1,3 +1,24 @@
+// Import dependencies
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const Groq = require('groq-sdk');
+
+// Initialize express app
+const app = express();
+app.use(bodyParser.json()); // Middleware to parse JSON request bodies
+
+// Initialize Groq client
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
+
+// Add a health-check route to test your deployment
+app.get('/', (req, res) => {
+  res.send('Server is live!');
+});
+
+// POST route for /chat
 app.post('/chat', async (req, res) => {
   const { totalEnergyConsumption, productNames, powerRatings } = req.body;
 
@@ -46,4 +67,10 @@ app.post('/chat', async (req, res) => {
     console.error("Error occurred:", error);
     res.status(500).json({ error: "Failed to get a response from the model", details: error.message });
   }
+});
+
+// Start the server
+const PORT = process.env.PORT || 6000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
