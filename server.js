@@ -14,10 +14,6 @@ const groq = new Groq({
 });
 
 // Add a health-check route to test your deployment
-app.get('/', (req, res) => {
-  res.send('Server is live!');
-});
-
 // POST route for /chat
 app.post('/chat', async (req, res) => {
   const { totalEnergyConsumption, productNames, powerRatings, hours } = req.body;
@@ -33,22 +29,61 @@ app.post('/chat', async (req, res) => {
 
   try {
     const chatCompletion = await groq.chat.completions.create({
-      model: 'deepseek-r1-distill-qwen-32b',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         {
+          role: 'system',
+          content: `You are an expert energy efficiency consultant with deep knowledge of household appliances and energy optimization. Your task is to analyze energy consumption data and provide detailed, actionable recommendations for reducing energy usage while maintaining comfort and functionality.`
+        },
+        {
           role: 'user',
-          content: `Based on the energy consumption data for the past month, I have the following details:
+          content: `Based on the following energy consumption data, please provide a comprehensive analysis and recommendations:
 
-          - Total energy consumption: ${totalEnergyConsumption} kWh
-          - Products: ${productNames.join(', ')} (e.g., LED bulbs, AC units, etc.)
-          - Power ratings (in watts): ${powerRatings.join(', ')} (e.g., 10W, 50W, etc.)
-          - Usage hours: ${hours.join(', ')} (e.g., 5 hours/day, 8 hours/day, etc.)
+Energy Consumption Data:
+- Total Monthly Energy: ${totalEnergyConsumption} kWh
+- Appliances: ${productNames.join(', ')}
+- Power Ratings: ${powerRatings.join(', ')} watts
+- Daily Usage Hours: ${hours.join(', ')} hours
 
-          I have already switched to energy-efficient devices like LED lightbulbs. However, I am looking for further ways to optimize energy use and reduce unnecessary consumption. Could you provide a detailed recommendation on how to further optimize my energy consumption? Include practical tips for each device type, potential cost savings, and any overlooked opportunities for further improvement.`,
+Please provide recommendations in the following format:
+
+1. High-Impact Changes:
+   - Identify the top 3 energy-consuming appliances
+   - Suggest specific model upgrades with energy ratings
+   - Provide estimated energy savings in kWh and percentage
+
+2. Behavioral Recommendations:
+   - List specific usage patterns to optimize for each appliance
+   - Include timing recommendations (e.g., off-peak hours)
+   - Suggest maintenance practices for optimal efficiency
+
+3. Technology Upgrades:
+   - Recommend smart devices or automation options
+   - Suggest energy monitoring solutions
+   - List compatible energy-efficient accessories
+
+4. Cost Analysis:
+   - Calculate potential monthly savings in kWh
+   - Estimate annual cost savings
+   - Provide payback period for recommended upgrades
+
+5. Environmental Impact:
+   - Calculate CO2 reduction potential
+   - Estimate water savings (if applicable)
+   - List environmental benefits
+
+Please ensure all recommendations are:
+- Specific to the provided appliances
+- Include actual numbers and calculations
+- Consider local climate and usage patterns
+- Prioritize cost-effective solutions
+- Include both immediate and long-term improvements
+
+Format the response in clear sections with bullet points for easy reading.`
         },
       ],
       temperature: 0.7,
-      max_tokens: 1024,
+      max_tokens: 2048,
       top_p: 1,
       stream: true,
       stop: null,
@@ -71,7 +106,6 @@ app.post('/chat', async (req, res) => {
       .json({ error: 'Failed to get a response from the model', details: error.message });
   }
 });
-
 // Start the server
 const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => {
